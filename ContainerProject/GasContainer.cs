@@ -9,6 +9,19 @@ namespace ContainerProject
         {
             Pressure = pressure;
         }
+        
+        public override void LoadCargo(double mass)
+        {
+            try
+            {
+                base.LoadCargo(mass); 
+            }
+            catch (OverfillException ex)
+            {
+                NotifyHazard($"Overfill in {SerialNumber}: {ex.Message}");
+                throw; 
+            }
+        }
 
         public override void Empty()
         {

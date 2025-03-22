@@ -10,19 +10,20 @@ namespace ContainerProject
             {"Eggs", 19}
         };
         
-        private string StoredProductType { get; }
+        public string StoredProductType { get; }
         public double Temperature { get; private set; }
 
         public RefrigeratedContainer(double tare, double height, double depth, double maxPayload, string productType, double initialTemperature)
             : base('C', tare, height, depth, maxPayload)
         {
-            if (!ProductMinTemperatures.ContainsKey(productType))
-                throw new ArgumentException($"Invalid product type: {productType}");
+            if (!ProductMinTemperatures.TryGetValue(productType, out var minTemp))
+                throw new ArgumentException($"Invalid product: {productType}");
+
             
-            if (initialTemperature < ProductMinTemperatures[productType])
+            if (initialTemperature < minTemp)
                 throw new ArgumentException(
-                    $"Temperature too low for {productType}. " +
-                    $"Minimum: {ProductMinTemperatures[productType]}°C");
+                    $"Temperature {initialTemperature}°C is too low for {productType}. " +
+                    $"Minimum: {minTemp}°C");
 
             StoredProductType = productType;
             Temperature = initialTemperature;
@@ -37,6 +38,7 @@ namespace ContainerProject
 
             Temperature = newTemperature;
         }
+        
         
     }
 }
