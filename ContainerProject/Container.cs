@@ -18,6 +18,18 @@ namespace ContainerProject
             Depth = depth;
             MaxPayload = maxPayload;
         }
+        
+        public virtual void LoadCargo(double mass)
+        {
+            if (CargoMass + mass > MaxPayload)
+                throw new OverfillException($"Too heavy! Max: {MaxPayload}kg");
+            CargoMass += mass;
+        }
+
+        public virtual void Empty()
+        {
+            CargoMass = 0;
+        }
 
         
     }
