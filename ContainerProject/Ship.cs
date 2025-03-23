@@ -1,3 +1,5 @@
+using ContainerProject.Containers;
+
 namespace ContainerProject
 {
     public class Ship
@@ -14,20 +16,30 @@ namespace ContainerProject
             MaxWeightKg = maxWeightTons * 1000;
         }
 
-        // Basic container loading
+        //load a container onto a ship
         public void AddContainer(Container container)
         {
+            if (container.CurrentShip != null)
+                throw new InvalidOperationException($"Container {container.SerialNumber} is already on another ship!");
+        
             ValidateCapacity(container);
             Containers.Add(container);
+            container.CurrentShip = this;
         }
 
-        // Load multiple containers
+        //load a list of containers onto a ship
         public void AddContainers(List<Container> containers)
         {
             foreach (var container in containers)
             {
+                if (container.CurrentShip != null)
+                    throw new InvalidOperationException(
+                        $"Container {container.SerialNumber} is already on another ship!"
+                    );
+            
                 ValidateCapacity(container);
                 Containers.Add(container);
+                container.CurrentShip = this;
             }
         }
 
@@ -50,14 +62,22 @@ namespace ContainerProject
             Containers.Remove(toRemove);
         }
 
-        // Replace container
-        public void ReplaceContainer(string oldSerial, Container newContainer)
+        //replace a container on the ship with a given number with another container
+        public void ReplaceContainer(string oldSerialNum, Container newContainer)
         {
-            RemoveContainer(oldSerial);
-            AddContainer(newContainer);
+            if (newContainer.CurrentShip != null)
+                throw new InvalidOperationException(
+                    $"Container {newContainer.SerialNumber} is already on another ship!"
+                );
+            
+            ValidateCapacity(newContainer);
+            RemoveContainer(oldSerialNum);
+            
+            Containers.Add(newContainer);
+            newContainer.CurrentShip = this;
         }
 
-        // Transfer between ships
+        //transfer between ships
         public static void TransferContainer(Ship source, Ship destination, string serialNumber)
         {
             // Find container in source ship
@@ -84,42 +104,8 @@ namespace ContainerProject
                 throw new InvalidOperationException($"Transfer failed: {ex.Message}");
             }
         }
-
-        // Print ship info
-        public void PrintShipInfo()
-        {
-            Console.WriteLine($"Ship [Max Speed: {MaxSpeed} knots]");
-            Console.WriteLine($"Capacity: {Containers.Count}/{MaxContainerCount} containers");
-            Console.WriteLine($"Weight: {GetTotalWeight()/1000:F1}t/{MaxWeightKg/1000:F1}t");
-            Console.WriteLine("Containers onboard:");
-            foreach (var container in Containers)
-            {
-                Console.WriteLine($"- {container.SerialNumber}");
-            }
-        }
-
-        // Print container info
-        public void PrintContainerInfo(string serialNumber)
-        {
-            foreach (var container in Containers)
-            {
-                if (container.SerialNumber == serialNumber)
-                {
-                    Console.WriteLine($"Container {serialNumber}");
-                    Console.WriteLine($"Type: {GetContainerType(serialNumber)}");
-                    Console.WriteLine($"Cargo Mass: {container.CargoMass}kg");
-                    Console.WriteLine($"Max Payload: {container.MaxPayload}kg");
-            
-                    // Add refrigerated container details
-                    if (container is RefrigeratedContainer rc)
-                        Console.WriteLine($"Product: {rc.StoredProductType}, Temp: {rc.Temperature}°C");
-            
-                    return;
-                }
-            }
-            throw new ArgumentException($"Container {serialNumber} not found in this ship!");
-        }
-
+        
+        //helper functions
         private void ValidateCapacity(Container container)
         {
             if (Containers.Count >= MaxContainerCount)
@@ -131,7 +117,7 @@ namespace ContainerProject
                     $"Total weight would exceed {(MaxWeightKg/1000):F1}t limit!");
         }
 
-        private double GetTotalWeight()
+        public double GetTotalWeight()
         {
             double total = 0;
             foreach (var container in Containers)
@@ -140,17 +126,6 @@ namespace ContainerProject
             }
             return total;
         }
-
-        private static string GetContainerType(string serialNumber)
-        {
-            var parts = serialNumber.Split('-');
-            return parts[1] switch
-            {
-                "L" => "Liquid",
-                "G" => "Gas",
-                "C" => "Refrigerated",
-                _ => "Unknown"
-            };
-        }
+        
     }
 }

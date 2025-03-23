@@ -1,4 +1,4 @@
-namespace ContainerProject
+namespace ContainerProject.Containers
 {
     public class GasContainer : Container, IHazardNotifier
     {
@@ -10,19 +10,19 @@ namespace ContainerProject
             Pressure = pressure;
         }
         
-        public override void LoadCargo(double mass)
+        protected override void LoadCargo(double mass)
         {
-            try
+            //exceeds payload -> returns an error
+            if (CargoMass + mass > MaxPayload)
             {
-                base.LoadCargo(mass); 
+                NotifyHazard($"Gas overfill in {SerialNumber}");
+                throw new OverfillException($"Max {MaxPayload}kg allowed");
             }
-            catch (OverfillException ex)
-            {
-                NotifyHazard($"Overfill in {SerialNumber}: {ex.Message}");
-                throw; 
-            }
+    
+            base.LoadCargo(mass); 
         }
 
+        //when emptying - leave 5% of cargo inside the container
         public override void Empty()
         {
             CargoMass *= 0.05; 

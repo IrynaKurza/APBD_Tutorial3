@@ -1,8 +1,8 @@
-namespace ContainerProject
+namespace ContainerProject.Containers
 {
     public class RefrigeratedContainer : Container
     {
-        private static readonly Dictionary<string, double> ProductMinTemperatures = new()
+        public static readonly Dictionary<string, double> ProductMinTemperatures = new()
         {
             {"Bananas", 13.3},    {"Chocolate", 18},   {"Fish", 2},
             {"Meat", -15},        {"Ice cream", -18},  {"Frozen pizza", -30},
@@ -19,7 +19,7 @@ namespace ContainerProject
             if (!ProductMinTemperatures.TryGetValue(productType, out var minTemp))
                 throw new ArgumentException($"Invalid product: {productType}");
 
-            
+            //temperature of container can't be lower than temperature required by a given type of product
             if (initialTemperature < minTemp)
                 throw new ArgumentException(
                     $"Temperature {initialTemperature}°C is too low for {productType}. " +
@@ -29,6 +29,8 @@ namespace ContainerProject
             Temperature = initialTemperature;
         }
 
+        
+        //if container's temperature will change later on
         public void SetTemperature(double newTemperature)
         {
             if (newTemperature < ProductMinTemperatures[StoredProductType])
@@ -38,6 +40,20 @@ namespace ContainerProject
 
             Temperature = newTemperature;
         }
+        
+        //loading cargo
+        public override void LoadCargo(double mass, string productType)
+        {
+            if (productType != StoredProductType)
+            {
+                throw new ArgumentException(
+                    $"This container is for {StoredProductType}, not {productType}!"
+                );
+            }
+        
+            base.LoadCargo(mass, productType);
+        }
+        
         
         
     }

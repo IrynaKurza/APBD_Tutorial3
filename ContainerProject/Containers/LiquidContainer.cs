@@ -1,4 +1,4 @@
-namespace ContainerProject
+namespace ContainerProject.Containers
 {
     public class LiquidContainer : Container, IHazardNotifier
     {
@@ -10,10 +10,12 @@ namespace ContainerProject
             IsHazardous = isHazardous;
         }
 
-        public override void LoadCargo(double mass)
+        protected override void LoadCargo(double mass)
         {
+            //different limit depending 
             double limit = IsHazardous ? MaxPayload * 0.5 : MaxPayload * 0.9;
-        
+            
+            //report the attempt to perform a dangerous operation
             if (CargoMass + mass > limit)
             {
                 NotifyHazard($"Tried to overload! Container: {SerialNumber}");

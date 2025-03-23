@@ -1,20 +1,19 @@
-namespace ContainerProject
+namespace ContainerProject.Containers
 {
     public abstract class Container
     {
         public string SerialNumber { get; }
-        public double CargoMass { get; set; }
+        public double CargoMass { get; protected set; }
         public double TareWeight { get; }
         public double Height { get; }
-        protected double Depth { get; }
+        public double Depth { get; }
         public double MaxPayload { get; }
-        private static readonly Dictionary<char, int> TypeCounters = new();
+        private static int _counter;
+        public Ship? CurrentShip { get; set; }
 
         protected Container(char typeCode, double tare, double height, double depth, double maxPayload)
         {
-            TypeCounters.TryGetValue(typeCode, out var count);
-            TypeCounters[typeCode] = ++count;
-            SerialNumber = $"KON-{typeCode}-{count}";
+            SerialNumber = $"KON-{typeCode}-{++_counter}";
             
             TareWeight = tare;
             Height = height;
@@ -22,13 +21,24 @@ namespace ContainerProject
             MaxPayload = maxPayload;
         }
         
-        public virtual void LoadCargo(double mass)
+        //loading container with a given mass of cargo
+        protected virtual void LoadCargo(double mass)
+        {
+            if (CargoMass + mass > MaxPayload)
+                throw new OverfillException($"Too heavy! Max: {MaxPayload}kg");
+            CargoMass += mass;
+        }
+        
+        //loading for refrigerated container 
+        public virtual void LoadCargo(double mass, string productType)
         {
             if (CargoMass + mass > MaxPayload)
                 throw new OverfillException($"Too heavy! Max: {MaxPayload}kg");
             CargoMass += mass;
         }
 
+        
+        //emptying cargo
         public virtual void Empty()
         {
             CargoMass = 0;
