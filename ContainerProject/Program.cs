@@ -196,22 +196,52 @@ namespace ContainerProject
                 Console.WriteLine("1. Liquid");
                 Console.WriteLine("2. Gas");
                 Console.WriteLine("3. Refrigerated");
-        
+
                 string typeChoice;
                 while (true)
                 {
                     Console.Write("\nSelect container type: ");
                     typeChoice = Console.ReadLine()?.Trim() ?? "";
-            
+
                     if (typeChoice == "1" || typeChoice == "2" || typeChoice == "3") break;
-            
                     Console.Write("\n❌ Invalid choice! Please enter 1-3 ");
                 }
 
-                double tare = GetValidDouble("\nTare weight (kg): ");
-                double height = GetValidDouble("Height (cm): ");
-                double depth = GetValidDouble("Depth (cm): ");
-                double payload = GetValidDouble("Max payload (kg): ");
+                //tare weight validation
+                double tare;
+                while (true)
+                {
+                    tare = GetValidDouble("\nTare weight (kg): ");
+                    if (tare > 0) break;
+                    Console.WriteLine("\n❌ Tare weight must be greater than 0!");
+                }
+
+                //height validation
+                double height;
+                while (true)
+                {
+                    height = GetValidDouble("Height (cm): ");
+                    if (height > 0) break;
+                    Console.WriteLine("\n❌ Height must be greater than 0!");
+                }
+
+                //depth validation
+                double depth;
+                while (true)
+                {
+                    depth = GetValidDouble("Depth (cm): ");
+                    if (depth > 0) break;
+                    Console.WriteLine("\n❌ Depth must be greater than 0!");
+                }
+
+                //payload validation
+                double payload;
+                while (true)
+                {
+                    payload = GetValidDouble("Max payload (kg): ");
+                    if (payload > 0) break;
+                    Console.WriteLine("\n❌ Max payload must be greater than 0!");
+                }
 
                 Container container = typeChoice switch
                 {
@@ -229,7 +259,7 @@ namespace ContainerProject
                 Console.WriteLine($"\n❌ Error: {ex.Message}");
             }
         }
-        
+
         //liquid container
         static LiquidContainer CreateLiquidContainer(double tare, double height, double depth, double payload)
         {
@@ -240,7 +270,14 @@ namespace ContainerProject
         //gas container
         static GasContainer CreateGasContainer(double tare, double height, double depth, double payload)
         {
-            double pressure = GetValidDouble("Enter pressure (atm): ");
+            double pressure;
+            while (true)
+            {
+                pressure = GetValidDouble("Enter pressure (atm): ");
+                if (pressure > 0) break;
+                Console.WriteLine("\n❌ Pressure must be greater than 0!");
+            }
+    
             return new GasContainer(tare, height, depth, payload, pressure);
         }
 
@@ -337,7 +374,7 @@ namespace ContainerProject
                     Console.WriteLine($"{i + 1}. {availableContainers[i].SerialNumber} ({GetContainerType(availableContainers[i])})");
                 }
         
-                int newIndex = GetValidInt($"Select new container (1-{availableContainers.Count})") - 1;
+                int newIndex = GetValidInt($"Select new container (1-{availableContainers.Count}): ") - 1;
                 var newContainer = availableContainers[newIndex];
         
                 ship.ReplaceContainer(oldContainer.SerialNumber, newContainer);
@@ -353,12 +390,34 @@ namespace ContainerProject
         //transfer container
         static void TransferContainer()
         {
-            var source = SelectShip("Select source ship:");
-            var dest = SelectShip("Select destination ship:");
-            var container = SelectContainer();
+            try
+            {
+                var source = SelectShip("Select source ship:");
+                var dest = SelectShip("Select destination ship:");
 
-            Ship.TransferContainer(source, dest, container.SerialNumber);
-            Console.WriteLine("\n✅ Transfer completed successfully!");
+                // Show only containers from source ship
+                Console.WriteLine("\n=== Containers on Source Ship ===");
+                if (source.Containers.Count == 0)
+                {
+                    Console.WriteLine("❌ No containers available for transfer!");
+                    return;
+                }
+        
+                for (int i = 0; i < source.Containers.Count; i++)
+                {
+                    Console.WriteLine($"{i + 1}. {source.Containers[i].SerialNumber}");
+                }
+        
+                int index = GetValidInt($"Select container to transfer (1-{source.Containers.Count}): ") - 1;
+                var container = source.Containers[index];
+
+                Ship.TransferContainer(source, dest, container.SerialNumber);
+                Console.WriteLine("\n✅ Transfer completed successfully!");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"\n❌ Error: {ex.Message}");
+            }
         }
         
         
@@ -578,18 +637,20 @@ namespace ContainerProject
         //select container
         static Container SelectContainer()
         {
-            if (Containers.Count == 0)
-                throw new InvalidOperationException("No containers available!");
-            
-            Console.WriteLine("\n=== Available Containers ===");
-            for (int i = 0; i < Containers.Count; i++)
-            {
-                Console.WriteLine($"{i + 1}. {Containers[i].SerialNumber} " +
-                                  $"({GetContainerType(Containers[i])})");
-            }
+            //filter out containers already on ships
+            var availableContainers = Containers.Where(c => c.CurrentShip == null).ToList();
     
-            int index = GetValidInt($"Select container (1-{Containers.Count}): ") - 1;
-            return Containers[index];
+            if (availableContainers.Count == 0)
+                throw new InvalidOperationException("No available containers!");
+    
+            Console.WriteLine("\n=== Available Containers ===");
+            for (int i = 0; i < availableContainers.Count; i++)
+            {
+                Console.WriteLine($"{i + 1}. {availableContainers[i].SerialNumber} ({GetContainerType(availableContainers[i])})");
+            }
+
+            int index = GetValidInt($"Select container (1-{availableContainers.Count}): ") - 1;
+            return availableContainers[index];
         }
         
         //select multiple containers
@@ -629,7 +690,7 @@ namespace ContainerProject
                 Console.WriteLine();
 
                 Console.Write("Enter container number (0 to finish): ");
-                if (int.TryParse(Console.ReadLine(), out int choice))
+                if (int.TryParse(Console.ReadLine(), out var choice))
                 {
                     if (choice == 0) break;
                     if (choice > 0 && choice <= availableContainers.Count)
@@ -685,7 +746,7 @@ namespace ContainerProject
                                   $"Max Weight: {Ships[i].MaxWeightKg / 1000}t]");
             }
     
-            int index = GetValidInt($"{prompt} (1-{Ships.Count})") - 1;
+            int index = GetValidInt($"{prompt} (1-{Ships.Count}): ") - 1;
             return Ships[index];
         }
 

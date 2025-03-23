@@ -21,10 +21,14 @@ namespace ContainerProject
         {
             if (container.CurrentShip != null)
                 throw new InvalidOperationException($"\n❌ Container {container.SerialNumber} is already on another ship!");
-        
+            
             ValidateCapacity(container);
+            
             Containers.Add(container);
+            
             container.CurrentShip = this;
+
+            Console.WriteLine($"\n✅ Container {container.SerialNumber} added successfully to the ship!");
         }
 
         //load a list of containers onto a ship
@@ -59,12 +63,15 @@ namespace ContainerProject
                     break;
                 }
             }
-
+            
             if (toRemove == null)
                 throw new ArgumentException($"\n❌ Container {serialNumber} not found!");
-        
+            
             Containers.Remove(toRemove);
-            toRemove.CurrentShip = null; 
+            
+            toRemove.CurrentShip = null;
+
+            Console.WriteLine($"\n✅ Container {serialNumber} removed successfully from the ship!");
         }
 
         //replace a container on the ship with a given number with another container
@@ -83,6 +90,8 @@ namespace ContainerProject
         //transfer between ships
         public static void TransferContainer(Ship source, Ship destination, string serialNumber)
         {
+            Console.WriteLine($"\nAttempting to transfer container {serialNumber}...");
+
             Container? toTransfer = null;
             foreach (var container in source.Containers)
             {
@@ -96,12 +105,19 @@ namespace ContainerProject
             if (toTransfer == null)
                 throw new ArgumentException($"\n❌ Container {serialNumber} not found in source ship!");
 
+            Console.WriteLine($"Container found: {toTransfer.SerialNumber}, CurrentShip: {toTransfer.CurrentShip}");
+
             try
             {
                 destination.ValidateCapacity(toTransfer);
-                
-                destination.AddContainer(toTransfer);
+
+                Console.WriteLine("Removing container from source ship...");
                 source.RemoveContainer(serialNumber);
+
+                Console.WriteLine("Adding container to destination ship...");
+                destination.AddContainer(toTransfer);
+
+                Console.WriteLine($"\n✅ Container {serialNumber} transferred successfully!");
             }
             catch (OverfillException ex)
             {
