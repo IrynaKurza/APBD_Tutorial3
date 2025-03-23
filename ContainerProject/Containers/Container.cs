@@ -29,15 +29,6 @@ namespace ContainerProject.Containers
             CargoMass += mass;
         }
         
-        //loading for refrigerated container 
-        public virtual void LoadCargo(double mass, string productType)
-        {
-            if (CargoMass + mass > MaxPayload)
-                throw new OverfillException($"Too heavy! Max: {MaxPayload}kg");
-            CargoMass += mass;
-        }
-
-        
         //emptying cargo
         public virtual void Empty()
         {

@@ -42,16 +42,15 @@ namespace ContainerProject.Containers
         }
         
         //loading cargo
-        public override void LoadCargo(double mass, string productType)
+        public void LoadCargo(double mass, string productType)
         {
             if (productType != StoredProductType)
-            {
-                throw new ArgumentException(
-                    $"This container is for {StoredProductType}, not {productType}!"
-                );
-            }
-        
-            base.LoadCargo(mass, productType);
+                throw new ArgumentException($"This container is for {StoredProductType}, not {productType}!");
+
+            if (CargoMass + mass > MaxPayload)
+                throw new OverfillException($"Too heavy! Max: {MaxPayload}kg");
+
+            CargoMass += mass;
         }
         
         

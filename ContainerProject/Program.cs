@@ -88,7 +88,7 @@ namespace ContainerProject
                 }
                 else
                 {
-                    Console.WriteLine("Speed must be greater than 0!");
+                    Console.WriteLine("\n❌ Speed must be greater than 0!");
                 }
             }
 
@@ -105,7 +105,7 @@ namespace ContainerProject
                 }
                 else
                 {
-                    Console.WriteLine("Capacity must be greater than 0!");
+                    Console.WriteLine("\n❌ Capacity must be greater than 0!");
                 }
             }
 
@@ -122,7 +122,7 @@ namespace ContainerProject
                 }
                 else
                 {
-                    Console.WriteLine("Weight must be greater than 0!");
+                    Console.WriteLine("\n❌ Weight must be greater than 0!");
                 }
             }
 
