@@ -116,8 +116,6 @@ namespace ContainerProject
 
                 Console.WriteLine("Adding container to destination ship...");
                 destination.AddContainer(toTransfer);
-
-                Console.WriteLine($"\n✅ Container {serialNumber} transferred successfully!");
             }
             catch (OverfillException ex)
             {
