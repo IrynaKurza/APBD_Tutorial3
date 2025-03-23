@@ -38,12 +38,16 @@ namespace ContainerProject
                     );
             
                 ValidateCapacity(container);
+            }
+            
+            foreach (var container in containers)
+            {
                 Containers.Add(container);
                 container.CurrentShip = this;
             }
         }
 
-        // Remove container by serial number
+        //remove container by serial number
         public void RemoveContainer(string serialNumber)
         {
             Container? toRemove = null;
@@ -58,8 +62,9 @@ namespace ContainerProject
 
             if (toRemove == null)
                 throw new ArgumentException($"Container {serialNumber} not found!");
-            
+        
             Containers.Remove(toRemove);
+            toRemove.CurrentShip = null; 
         }
 
         //replace a container on the ship with a given number with another container
@@ -78,7 +83,6 @@ namespace ContainerProject
         //transfer between ships
         public static void TransferContainer(Ship source, Ship destination, string serialNumber)
         {
-            // Find container in source ship
             Container? toTransfer = null;
             foreach (var container in source.Containers)
             {

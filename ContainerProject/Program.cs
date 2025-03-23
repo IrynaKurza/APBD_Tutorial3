@@ -227,6 +227,7 @@ namespace ContainerProject
             {
                 var ship = SelectShip("Select ship to load to:");
                 var containers = SelectMultipleContainers();
+                
                 ship.AddContainers(containers);
                 Console.WriteLine("\n✅ Containers loaded successfully!");
             }
@@ -243,11 +244,46 @@ namespace ContainerProject
             try
             {
                 var ship = SelectShip();
-                Console.WriteLine("\n=== Select Container to Replace ===");
-                var oldContainer = SelectContainer();
-                Console.WriteLine("\n=== Select New Container ===");
-                var newContainer = SelectContainer();
-            
+                
+                Console.WriteLine("\n=== Containers On Ship ===");
+                if (ship.Containers.Count == 0)
+                {
+                    Console.WriteLine("\n❌ No containers on this ship!");
+                    return;
+                }
+        
+                for (int i = 0; i < ship.Containers.Count; i++)
+                {
+                    Console.WriteLine($"{i + 1}. {ship.Containers[i].SerialNumber} ({GetContainerType(ship.Containers[i])})");
+                }
+        
+                int oldIndex = GetValidInt($"Select container to replace (1-{ship.Containers.Count}): ") - 1;
+                var oldContainer = ship.Containers[oldIndex];
+                
+                Console.WriteLine("\n=== Available Containers ===");
+                List<Container> availableContainers = new List<Container>();
+                foreach (var container in Containers)
+                {
+                    if (container.CurrentShip == null)
+                    {
+                        availableContainers.Add(container);
+                    }
+                }
+        
+                if (availableContainers.Count == 0)
+                {
+                    Console.WriteLine("\n❌ No available containers!");
+                    return;
+                }
+        
+                for (int i = 0; i < availableContainers.Count; i++)
+                {
+                    Console.WriteLine($"{i + 1}. {availableContainers[i].SerialNumber} ({GetContainerType(availableContainers[i])})");
+                }
+        
+                int newIndex = GetValidInt($"Select new container (1-{availableContainers.Count})") - 1;
+                var newContainer = availableContainers[newIndex];
+        
                 ship.ReplaceContainer(oldContainer.SerialNumber, newContainer);
                 Console.WriteLine("\n✅ Container replaced successfully!");
             }
@@ -356,20 +392,35 @@ namespace ContainerProject
         //remove container from ship
         static void RemoveContainerFromShip()
         {
-            var ship = SelectShip("Select ship to remove from:");
-            var container = SelectContainer();
-        
             try
             {
+                var ship = SelectShip("Select ship to remove from:");
+        
+                Console.WriteLine("\n=== Containers On Ship ===");
+                if (ship.Containers.Count == 0)
+                {
+                    Console.WriteLine("\n❌ No containers on this ship!");
+                    return;
+                }
+                
+                for (int i = 0; i < ship.Containers.Count; i++)
+                {
+                    Console.WriteLine($"{i + 1}. {ship.Containers[i].SerialNumber} ({GetContainerType(ship.Containers[i])})");
+                }
+        
+                int index = GetValidInt($"Select container to remove (1-{ship.Containers.Count}): ") - 1;
+                var container = ship.Containers[index];
+        
                 ship.RemoveContainer(container.SerialNumber);
                 container.CurrentShip = null;
                 Console.WriteLine("\n✅ Container removed successfully!");
             }
-            catch (ArgumentException ex)
+            catch (Exception ex)
             {
                 Console.WriteLine($"\n❌ Error: {ex.Message}");
             }
         }
+        
 
         
         //===PRINTING DETAILS===
@@ -393,23 +444,24 @@ namespace ContainerProject
         static void ListContainers()
         {
             Console.WriteLine("\n=== Available Containers ===");
-            foreach (var container in Containers)
+            for (int i = 0; i < Containers.Count; i++)
             {
-                Console.WriteLine($"{container.SerialNumber} - {GetContainerType(container)}");
+                Console.WriteLine($"{i + 1}. {Containers[i].SerialNumber} - {GetContainerType(Containers[i])}");
             }
         }
 
         //ship details
         static void ShowShipDetails()
         {
-            var ship = SelectShip();
-            Console.WriteLine($"Ship [Max Speed: {ship.MaxSpeed} knots]");
-            Console.WriteLine($"Capacity: {ship.Containers.Count}/{ship.MaxContainerCount} containers"); // Fixed
+            Ship ship = SelectShip();
+            Console.WriteLine($"\nShip [Max Speed: {ship.MaxSpeed} knots]");
+            Console.WriteLine($"Capacity: {ship.Containers.Count}/{ship.MaxContainerCount} containers");
             Console.WriteLine($"Weight: {ship.GetTotalWeight()/1000:F1}t/{ship.MaxWeightKg/1000:F1}t");
             Console.WriteLine("Containers onboard:");
-            foreach (var container in ship.Containers) // Fixed
+    
+            foreach (Container container in ship.Containers)
             {
-                Console.WriteLine($"- {container.SerialNumber}");
+                Console.WriteLine($"- {container.SerialNumber} ({GetContainerType(container)})");
             }
         }
         
@@ -457,7 +509,7 @@ namespace ContainerProject
                                   $"({GetContainerType(Containers[i])})");
             }
     
-            int index = GetValidInt($"Select container (1-{Containers.Count})") - 1;
+            int index = GetValidInt($"Select container (1-{Containers.Count}): ") - 1;
             return Containers[index];
         }
         
@@ -465,29 +517,81 @@ namespace ContainerProject
         static List<Container> SelectMultipleContainers()
         {
             List<Container> selected = new List<Container>();
+            var availableContainers = new List<Container>();
+            
+            foreach (Container container in Containers)
+            {
+                if (container.CurrentShip == null)
+                {
+                    availableContainers.Add(container);
+                }
+            }
+
+            if (availableContainers.Count == 0)
+            {
+                throw new InvalidOperationException("No available containers to load!");
+            }
+
+            Console.WriteLine("\n=== Available Containers ===");
+            for (int i = 0; i < availableContainers.Count; i++)
+            {
+                Console.WriteLine(
+                    $"{i + 1}. {availableContainers[i].SerialNumber} ({GetContainerType(availableContainers[i])})");
+            }
+
             while (true)
             {
-                Console.WriteLine("\n=== Available Containers ===");
-                ListContainers();
+                Console.Write("\nSelected containers: ");
+                foreach (Container container in selected)
+                {
+                    Console.Write(container.SerialNumber + " ");
+                }
+
+                Console.WriteLine();
+
                 Console.Write("Enter container number (0 to finish): ");
-            
                 if (int.TryParse(Console.ReadLine(), out int choice))
                 {
                     if (choice == 0) break;
-                    if (choice > 0 && choice <= Containers.Count)
-                        selected.Add(Containers[choice - 1]);
+                    if (choice > 0 && choice <= availableContainers.Count)
+                    {
+                        Container container = availableContainers[choice - 1];
+                        
+                        bool alreadyAdded = false;
+                        foreach (Container c in selected)
+                        {
+                            if (c == container)
+                            {
+                                alreadyAdded = true;
+                                break;
+                            }
+                        }
+
+                        if (alreadyAdded)
+                        {
+                            Console.WriteLine("❌ Container already selected!");
+                        }
+                        else
+                        {
+                            selected.Add(container);
+                            Console.WriteLine($"✅ Added {container.SerialNumber}");
+                        }
+                    }
                     else
+                    {
                         Console.WriteLine("❌ Invalid selection");
+                    }
                 }
                 else
                 {
                     Console.WriteLine("❌ Invalid number");
                 }
             }
+
             return selected;
         }
 
-        
+
         //select ship
         static Ship SelectShip(string prompt = "Select ship:")
         {
@@ -556,7 +660,7 @@ namespace ContainerProject
                 
                 if (int.TryParse(input, out result))
                 {
-                    isValid = true; // success!
+                    isValid = true; 
                 }
                 else
                 {
