@@ -10,7 +10,7 @@ namespace ContainerProject.Containers
             IsHazardous = isHazardous;
         }
 
-        protected override void LoadCargo(double mass)
+        public override void LoadCargo(double mass)
         {
             //different limit depending 
             double limit = IsHazardous ? MaxPayload * 0.5 : MaxPayload * 0.9;

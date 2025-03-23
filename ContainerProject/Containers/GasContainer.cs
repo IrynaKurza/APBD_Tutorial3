@@ -10,7 +10,7 @@ namespace ContainerProject.Containers
             Pressure = pressure;
         }
         
-        protected override void LoadCargo(double mass)
+        public override void LoadCargo(double mass)
         {
             //exceeds payload -> returns an error
             if (CargoMass + mass > MaxPayload)

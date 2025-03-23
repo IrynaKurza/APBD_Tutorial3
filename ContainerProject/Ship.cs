@@ -66,11 +66,9 @@ namespace ContainerProject
         public void ReplaceContainer(string oldSerialNum, Container newContainer)
         {
             if (newContainer.CurrentShip != null)
-                throw new InvalidOperationException(
-                    $"Container {newContainer.SerialNumber} is already on another ship!"
-                );
-            
-            ValidateCapacity(newContainer);
+                throw new InvalidOperationException($"Container {newContainer.SerialNumber} is already on another ship!");
+    
+            ValidateCapacity(newContainer); 
             RemoveContainer(oldSerialNum);
             
             Containers.Add(newContainer);

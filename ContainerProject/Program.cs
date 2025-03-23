@@ -27,7 +27,9 @@ namespace ContainerProject
                 Console.WriteLine("9. Empty Container");
                 Console.WriteLine("10. Remove Container from Ship");
                 Console.WriteLine("11. Show Container Details");
-                Console.WriteLine("12. Exit\n");
+                Console.WriteLine("12. Load Multiple Containers to Ship");
+                Console.WriteLine("13. Replace Container on Ship");
+                Console.WriteLine("14. Exit\n");
                 Console.Write("Select option: ");
 
                 var input= Console.ReadLine()?.Trim() ?? "";
@@ -47,7 +49,9 @@ namespace ContainerProject
                         case "9": EmptyContainer(); break;
                         case "10": RemoveContainerFromShip(); break;
                         case "11": ShowContainerDetails(); break;
-                        case "12": return;
+                        case "12": LoadContainers(); break;
+                        case "13": ReplaceContainerOnShip(); break;
+                        case "14": return; 
                         default: Console.WriteLine("Invalid option!"); break;
                     }
                 }
@@ -195,16 +199,64 @@ namespace ContainerProject
             return new RefrigeratedContainer(tare, height, depth, payload, productType, temp);
         }
 
+        
         //===CONTAINER FUNCTIONS===
         
         //load container
         static void LoadContainer()
         {
-            var container = SelectContainer();
-            var ship = SelectShip("Select ship to load to:");
-            ship.AddContainer(container);
-            Console.WriteLine("\n✅ Container loaded successfully!");
+            try
+            {
+                var container = SelectContainer();
+                var ship = SelectShip("Select ship to load to:");
+                
+                ship.AddContainer(container);
+                Console.WriteLine("\n✅ Container loaded successfully!");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error: {ex.Message}");
+            }
         }
+        
+        
+        //load containers (in bulk)
+        static void LoadContainers()
+        {
+            try
+            {
+                var ship = SelectShip("Select ship to load to:");
+                var containers = SelectMultipleContainers();
+                ship.AddContainers(containers);
+                Console.WriteLine("\n✅ Containers loaded successfully!");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"\n❌ Error: {ex.Message}");
+            }
+        }
+        
+        
+        //replace container
+        static void ReplaceContainerOnShip()
+        {
+            try
+            {
+                var ship = SelectShip();
+                Console.WriteLine("\n=== Select Container to Replace ===");
+                var oldContainer = SelectContainer();
+                Console.WriteLine("\n=== Select New Container ===");
+                var newContainer = SelectContainer();
+            
+                ship.ReplaceContainer(oldContainer.SerialNumber, newContainer);
+                Console.WriteLine("\n✅ Container replaced successfully!");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"\n❌ Error: {ex.Message}");
+            }
+        }
+        
         
         //transfer container
         static void TransferContainer()
@@ -217,22 +269,33 @@ namespace ContainerProject
             Console.WriteLine("\n✅ Transfer completed successfully!");
         }
         
+        
         //load cargo into container
         static void LoadCargoIntoContainer()
         {
-            var container = SelectContainer();
-            double mass = GetValidDouble("Enter cargo mass (kg): ");
-            string productType = "";
-
-            if (container is RefrigeratedContainer)
+            try
             {
-                Console.WriteLine("Available products: " + 
-                                  string.Join(", ", RefrigeratedContainer.ProductMinTemperatures.Keys));
-                productType = GetProductTypeFromUser();
-            }
+                var container = SelectContainer();
+                double mass = GetValidDouble("Enter cargo mass (kg): ");
 
-            container.LoadCargo(mass, productType);
-            Console.WriteLine("\n✅ Cargo loaded successfully!");
+                if (container is RefrigeratedContainer rc)
+                {
+                    Console.WriteLine("Available products: " + 
+                                      string.Join(", ", RefrigeratedContainer.ProductMinTemperatures.Keys));
+                    string productType = GetProductTypeFromUser();
+                    rc.LoadCargo(mass, productType);
+                }
+                else
+                {
+                    container.LoadCargo(mass); 
+                }
+        
+                Console.WriteLine("\n✅ Cargo loaded successfully!");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"\n❌ Error: {ex.Message}");
+            }
         }
 
         
@@ -340,12 +403,11 @@ namespace ContainerProject
         static void ShowShipDetails()
         {
             var ship = SelectShip();
-            
             Console.WriteLine($"Ship [Max Speed: {ship.MaxSpeed} knots]");
-            Console.WriteLine($"Capacity: {Containers.Count}/{ship.MaxContainerCount} containers");
+            Console.WriteLine($"Capacity: {ship.Containers.Count}/{ship.MaxContainerCount} containers"); // Fixed
             Console.WriteLine($"Weight: {ship.GetTotalWeight()/1000:F1}t/{ship.MaxWeightKg/1000:F1}t");
             Console.WriteLine("Containers onboard:");
-            foreach (var container in Containers)
+            foreach (var container in ship.Containers) // Fixed
             {
                 Console.WriteLine($"- {container.SerialNumber}");
             }
@@ -385,6 +447,9 @@ namespace ContainerProject
         //select container
         static Container SelectContainer()
         {
+            if (Containers.Count == 0)
+                throw new InvalidOperationException("No containers available!");
+            
             Console.WriteLine("\n=== Available Containers ===");
             for (int i = 0; i < Containers.Count; i++)
             {
@@ -396,9 +461,39 @@ namespace ContainerProject
             return Containers[index];
         }
         
+        //select multiple containers
+        static List<Container> SelectMultipleContainers()
+        {
+            List<Container> selected = new List<Container>();
+            while (true)
+            {
+                Console.WriteLine("\n=== Available Containers ===");
+                ListContainers();
+                Console.Write("Enter container number (0 to finish): ");
+            
+                if (int.TryParse(Console.ReadLine(), out int choice))
+                {
+                    if (choice == 0) break;
+                    if (choice > 0 && choice <= Containers.Count)
+                        selected.Add(Containers[choice - 1]);
+                    else
+                        Console.WriteLine("❌ Invalid selection");
+                }
+                else
+                {
+                    Console.WriteLine("❌ Invalid number");
+                }
+            }
+            return selected;
+        }
+
+        
         //select ship
         static Ship SelectShip(string prompt = "Select ship:")
         {
+            if (Ships.Count == 0)
+                throw new InvalidOperationException("No ships available!");
+            
             Console.WriteLine("\n=== Available Ships ===");
             for (int i = 0; i < Ships.Count; i++)
             {
