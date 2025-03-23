@@ -25,7 +25,7 @@ namespace ContainerProject.Containers
         public virtual void LoadCargo(double mass)
         {
             if (CargoMass + mass > MaxPayload)
-                throw new OverfillException($"Too heavy! Max: {MaxPayload}kg");
+                throw new OverfillException($"\n❌ Too heavy! Max: {MaxPayload}kg");
             CargoMass += mass;
         }
         

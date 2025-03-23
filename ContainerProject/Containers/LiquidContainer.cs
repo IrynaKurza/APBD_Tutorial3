@@ -18,7 +18,7 @@ namespace ContainerProject.Containers
             //report the attempt to perform a dangerous operation
             if (CargoMass + mass > limit)
             {
-                NotifyHazard($"Tried to overload! Container: {SerialNumber}");
+                NotifyHazard($"\n❌ Tried to overload! Container: {SerialNumber}");
                 throw new OverfillException($"Cannot load {mass}kg");
             }
         
@@ -27,7 +27,7 @@ namespace ContainerProject.Containers
 
         public void NotifyHazard(string message)
         {
-            Console.WriteLine($"DANGER! {message}");
+            Console.WriteLine($"\n❌ DANGER! {message}");
         }
         
     }

@@ -20,7 +20,7 @@ namespace ContainerProject
         public void AddContainer(Container container)
         {
             if (container.CurrentShip != null)
-                throw new InvalidOperationException($"Container {container.SerialNumber} is already on another ship!");
+                throw new InvalidOperationException($"\n❌ Container {container.SerialNumber} is already on another ship!");
         
             ValidateCapacity(container);
             Containers.Add(container);
@@ -34,7 +34,7 @@ namespace ContainerProject
             {
                 if (container.CurrentShip != null)
                     throw new InvalidOperationException(
-                        $"Container {container.SerialNumber} is already on another ship!"
+                        $"\n❌ Container {container.SerialNumber} is already on another ship!"
                     );
             
                 ValidateCapacity(container);
@@ -61,7 +61,7 @@ namespace ContainerProject
             }
 
             if (toRemove == null)
-                throw new ArgumentException($"Container {serialNumber} not found!");
+                throw new ArgumentException($"\n❌ Container {serialNumber} not found!");
         
             Containers.Remove(toRemove);
             toRemove.CurrentShip = null; 
@@ -71,7 +71,7 @@ namespace ContainerProject
         public void ReplaceContainer(string oldSerialNum, Container newContainer)
         {
             if (newContainer.CurrentShip != null)
-                throw new InvalidOperationException($"Container {newContainer.SerialNumber} is already on another ship!");
+                throw new InvalidOperationException($"\n❌ Container {newContainer.SerialNumber} is already on another ship!");
     
             ValidateCapacity(newContainer); 
             RemoveContainer(oldSerialNum);
@@ -94,16 +94,18 @@ namespace ContainerProject
             }
 
             if (toTransfer == null)
-                throw new ArgumentException($"Container {serialNumber} not found in source ship!");
+                throw new ArgumentException($"\n❌ Container {serialNumber} not found in source ship!");
 
             try
             {
+                destination.ValidateCapacity(toTransfer);
+                
                 destination.AddContainer(toTransfer);
                 source.RemoveContainer(serialNumber);
             }
             catch (OverfillException ex)
             {
-                throw new InvalidOperationException($"Transfer failed: {ex.Message}");
+                throw new InvalidOperationException($"\n❌ Transfer failed: {ex.Message}");
             }
         }
         
@@ -112,11 +114,14 @@ namespace ContainerProject
         {
             if (Containers.Count >= MaxContainerCount)
                 throw new OverfillException(
-                    $"Ship can only carry {MaxContainerCount} containers!");
+                    $"❌ Ship can't carry more than {MaxContainerCount} containers " +
+                    $"(Current: {Containers.Count})");
 
-            if (GetTotalWeight() + container.TareWeight + container.CargoMass > MaxWeightKg)
+            double newTotal = GetTotalWeight() + container.TareWeight + container.CargoMass;
+            if (newTotal > MaxWeightKg)
                 throw new OverfillException(
-                    $"Total weight would exceed {(MaxWeightKg/1000):F1}t limit!");
+                    $"❌ Total weight would be {newTotal/1000:F1}t " +
+                    $"(Max: {MaxWeightKg/1000:F1}t)");
         }
 
         public double GetTotalWeight()

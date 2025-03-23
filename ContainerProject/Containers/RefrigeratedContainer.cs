@@ -22,7 +22,7 @@ namespace ContainerProject.Containers
             //temperature of container can't be lower than temperature required by a given type of product
             if (initialTemperature < minTemp)
                 throw new ArgumentException(
-                    $"Temperature {initialTemperature}°C is too low for {productType}. " +
+                    $"\n❌ Temperature {initialTemperature}°C is too low for {productType}. " +
                     $"Minimum: {minTemp}°C");
 
             StoredProductType = productType;
@@ -35,7 +35,7 @@ namespace ContainerProject.Containers
         {
             if (newTemperature < ProductMinTemperatures[StoredProductType])
                 throw new ArgumentException(
-                    $"Temperature {newTemperature}°C is too low for {StoredProductType}. " +
+                    $"\n❌ Temperature {newTemperature}°C is too low for {StoredProductType}. " +
                     $"Minimum: {ProductMinTemperatures[StoredProductType]}°C");
 
             Temperature = newTemperature;
@@ -45,10 +45,10 @@ namespace ContainerProject.Containers
         public void LoadCargo(double mass, string productType)
         {
             if (productType != StoredProductType)
-                throw new ArgumentException($"This container is for {StoredProductType}, not {productType}!");
+                throw new ArgumentException($"\n❌ This container is for {StoredProductType}, not {productType}!");
 
             if (CargoMass + mass > MaxPayload)
-                throw new OverfillException($"Too heavy! Max: {MaxPayload}kg");
+                throw new OverfillException($"\n❌ Too heavy! Max: {MaxPayload}kg");
 
             CargoMass += mass;
         }

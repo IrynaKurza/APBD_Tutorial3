@@ -15,7 +15,7 @@ namespace ContainerProject.Containers
             //exceeds payload -> returns an error
             if (CargoMass + mass > MaxPayload)
             {
-                NotifyHazard($"Gas overfill in {SerialNumber}");
+                NotifyHazard($"\n❌ Gas overfill in {SerialNumber}");
                 throw new OverfillException($"Max {MaxPayload}kg allowed");
             }
     
@@ -30,7 +30,7 @@ namespace ContainerProject.Containers
 
         public void NotifyHazard(string message)
         {
-            Console.WriteLine($"GAS WARNING! {message}");
+            Console.WriteLine($"\n❌ GAS WARNING! {message}");
         }
         
     }
