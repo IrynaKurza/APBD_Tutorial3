@@ -16,56 +16,112 @@ namespace ContainerProject
             {
                 Console.Clear();
                 Console.WriteLine("=== Container Management System ===");
-                Console.WriteLine("1. Create New Ship");
-                Console.WriteLine("2. Create New Container");
-                Console.WriteLine("3. Load Container to Ship");
-                Console.WriteLine("4. Transfer Container Between Ships");
-                Console.WriteLine("5. List All Ships");
-                Console.WriteLine("6. List All Containers");
-                Console.WriteLine("7. Show Ship Details");
-                Console.WriteLine("8. Load Cargo into Container");
-                Console.WriteLine("9. Empty Container");
-                Console.WriteLine("10. Remove Container from Ship");
-                Console.WriteLine("11. Show Container Details");
-                Console.WriteLine("12. Load Multiple Containers to Ship");
-                Console.WriteLine("13. Replace Container on Ship");
-                Console.WriteLine("14. Exit\n");
-                Console.Write("Select option: ");
+                Console.WriteLine("1. Container Operations");
+                Console.WriteLine("2. Ship Operations");
+                Console.WriteLine("3. Exit");
+                Console.Write("\nSelect main category: ");
 
-                var input= Console.ReadLine()?.Trim() ?? "";
-                
+                var mainChoice = Console.ReadLine()?.Trim() ?? "";
+
                 try
                 {
-                    switch (input)
+                    switch (mainChoice)
                     {
-                        case "1": CreateShip(); break;
-                        case "2": CreateContainer(); break;
-                        case "3": LoadContainer(); break;
-                        case "4": TransferContainer(); break;
-                        case "5": ListShips(); break;
-                        case "6": ListContainers(); break;
-                        case "7": ShowShipDetails(); break;
-                        case "8": LoadCargoIntoContainer(); break;
-                        case "9": EmptyContainer(); break;
-                        case "10": RemoveContainerFromShip(); break;
-                        case "11": ShowContainerDetails(); break;
-                        case "12": LoadContainers(); break;
-                        case "13": ReplaceContainerOnShip(); break;
-                        case "14": return; 
-                        default: Console.WriteLine("Invalid option!"); break;
+                        case "1":
+                            ShowContainerMenu();
+                            break;
+                        case "2":
+                            ShowShipMenu();
+                            break;
+                        case "3":
+                            return;
+                        default:
+                            Console.WriteLine("Invalid category!");
+                            break;
                     }
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"Error: {ex.Message}");
                 }
-                
-                
+
                 Console.WriteLine("\n⭕ Press any key to continue...");
                 Console.ReadKey();
             }
         }
-        
+
+        static void ShowContainerMenu()
+        {
+            while (true)
+            {
+                Console.Clear();
+                Console.WriteLine("=== Container Operations ===");
+                Console.WriteLine("1. Create");
+                Console.WriteLine("2. Load Cargo");
+                Console.WriteLine("3. Empty");
+                Console.WriteLine("4. Change Temperature");
+                Console.WriteLine("5. Show Details");
+                Console.WriteLine("6. List All");
+                Console.WriteLine("7. Back to Main Menu");
+                Console.Write("\nSelect operation: ");
+
+                var choice = Console.ReadLine()?.Trim() ?? "";
+
+                switch (choice)
+                {
+                    case "1": CreateContainer(); break;
+                    case "2": LoadCargoIntoContainer(); break;
+                    case "3": EmptyContainer(); break; 
+                    case "4": ChangeContainerTemperature(); break; 
+                    case "5": ShowContainerDetails(); break;
+                    case "6": ListContainers(); break; 
+                    case "7": return;
+                    default: Console.WriteLine("Invalid option!"); break;
+                }
+
+                Console.WriteLine("\n⭕ Press any key to continue...");
+                Console.ReadKey();
+            }
+        }
+
+        static void ShowShipMenu()
+        {
+            while (true)
+            {
+                Console.Clear();
+                Console.WriteLine("=== Ship Operations ===");
+                Console.WriteLine("1. Create");
+                Console.WriteLine("2. Load Container");
+                Console.WriteLine("3. Load Multiple Containers");
+                Console.WriteLine("4. Transfer Between Ships");
+                Console.WriteLine("5. Replace Container");
+                Console.WriteLine("6. Remove Container");
+                Console.WriteLine("7. Show Details");
+                Console.WriteLine("8. List All");
+                Console.WriteLine("9. Back to Main Menu");
+                Console.Write("\nSelect operation: ");
+
+                var choice = Console.ReadLine()?.Trim() ?? "";
+
+                switch (choice)
+                {
+                    case "1": CreateShip(); break;
+                    case "2": LoadContainer(); break;
+                    case "3": LoadContainers(); break;
+                    case "4": TransferContainer(); break;
+                    case "5": ReplaceContainerOnShip(); break;
+                    case "6": RemoveContainerFromShip(); break;
+                    case "7": ShowShipDetails(); break;
+                    case "8": ListShips(); break;
+                    case "9": return;
+                    default: Console.WriteLine("Invalid option!"); break;
+                }
+
+                Console.WriteLine("\n⭕ Press any key to continue...");
+                Console.ReadKey();
+            }
+        }
+
 
         //===CREATING===
         
@@ -305,6 +361,29 @@ namespace ContainerProject
             Console.WriteLine("\n✅ Transfer completed successfully!");
         }
         
+        
+        //change temperature in container (refrigerated only)
+        static void ChangeContainerTemperature()
+        {
+            try
+            {
+                var container = SelectContainer();
+                if (container is RefrigeratedContainer rc)
+                {
+                    double newTemp = GetValidDouble("Enter new temperature (°C): ");
+                    rc.SetTemperature(newTemp);
+                    Console.WriteLine("\n✅ Temperature updated successfully!");
+                }
+                else
+                {
+                    Console.WriteLine("\n❌ Only refrigerated containers can change temperature!");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"\n❌ Error: {ex.Message}");
+            }
+        }
         
         //load cargo into container
         static void LoadCargoIntoContainer()
